@@ -147,35 +147,38 @@ public class DisassembleCommand extends DexInputCommand {
             return;
         }
 
-        if (inputList.size() > 1) {
-            System.err.println("Too many files specified");
-            usage();
-            return;
-        }
+        //if (inputList.size() > 1) {
+        //    System.err.println("Too many files specified");
+        //    usage();
+        //    return;
+        //}
 
-        String input = inputList.get(0);
-        loadDexFile(input);
+        //String input = inputList.get(0);
+        for (String input:inputList) {
+            System.out.println("disassembling..." + input);
+            loadDexFile(input);
 
-        if (showDeodexWarning() && dexFile.hasOdexOpcodes()) {
-            StringWrapper.printWrappedString(System.err,
-                    "Warning: You are disassembling an odex/oat file without deodexing it. You won't be able to " +
-                            "re-assemble the results unless you deodex it. See \"baksmali help deodex\"");
-        }
+            if (showDeodexWarning() && dexFile.hasOdexOpcodes()) {
+                StringWrapper.printWrappedString(System.err,
+                        "Warning: You are disassembling an odex/oat file without deodexing it. You won't be able to " +
+                        "re-assemble the results unless you deodex it. See \"baksmali help deodex\"");
+            }
 
-        File outputDirectoryFile = new File(outputDir);
-        if (!outputDirectoryFile.exists()) {
-            if (!outputDirectoryFile.mkdirs()) {
-                System.err.println("Can't create the output directory " + outputDir);
+            File outputDirectoryFile = new File(outputDir);
+            if (!outputDirectoryFile.exists()) {
+                if (!outputDirectoryFile.mkdirs()) {
+                    System.err.println("Can't create the output directory " + outputDir);
+                    System.exit(-1);
+                }
+            }
+
+            if (analysisArguments.classPathDirectories == null || analysisArguments.classPathDirectories.isEmpty()) {
+                analysisArguments.classPathDirectories = Lists.newArrayList(inputFile.getAbsoluteFile().getParent());
+            }
+
+            if (!Baksmali.disassembleDexFile(dexFile, outputDirectoryFile, jobs, getOptions(), classes)) {
                 System.exit(-1);
             }
-        }
-
-        if (analysisArguments.classPathDirectories == null || analysisArguments.classPathDirectories.isEmpty()) {
-            analysisArguments.classPathDirectories = Lists.newArrayList(inputFile.getAbsoluteFile().getParent());
-        }
-
-        if (!Baksmali.disassembleDexFile(dexFile, outputDirectoryFile, jobs, getOptions(), classes)) {
-            System.exit(-1);
         }
     }
 
